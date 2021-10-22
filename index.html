@@ -1,0 +1,179 @@
+<html>
+  <head>
+    <title>Ping Pong</title>
+  </head>
+  <body>
+    <canvas id="folha" width="650" height="500"></canvas>
+
+    <script>
+      //carrega primeiros comandos
+      window.onload = function () {
+        iniciar() // iniciarliza os comandos e variaveis
+        setInterval(principal, 1000 / 60) // roda o jogo no intervalo de 60*por segundos
+      }
+
+      function iniciar() {
+        folhaDesenho = document.getElementById('folha')
+        areaDesenho = folhaDesenho.getContext('2d')
+        larguraCampo = 600
+        alturaCampo = 500
+        larguraLinha = 5
+        diamentroBola = 5
+        alturaRaquete = 75
+        posBolaX = posBolaY = 20
+        velBolaPosX = velBolaPosY = 3
+        posJogador1 = alturaCampo / 4
+        posJogador2 = (alturaCampo / 4) * 3
+        efeitoRaquete = 0.3
+        pontJogador1 = pontJogador2 = 0
+        velJogador2 = 4
+        nivelFase = 0
+        proximaFase = 2
+
+        folhaDesenho.addEventListener('mousemove', function (e) {
+          posJogador1 = e.clientY - alturaRaquete / 2
+        })
+      }
+
+      function Fase() {
+        //muda de fase
+        if (nivelFase >= proximaFase) {
+          velJogador2++
+          velBolaPosX++
+          velBolaPosY++
+          proximaFase = proximaFase + 2
+          efeitoRaquete = efeitoRaquete * 1.1
+        }
+      }
+
+      function continuar() {
+        //coloca a bola no centro
+        posBolaX = larguraCampo / 2
+        posBolaY = alturaCampo / 2
+        velBolaPosX = -velBolaPosX
+        velBolaPosY = 3
+      }
+
+      function desenhar() {
+        //campo
+        areaDesenho.fillStyle = '#286047'
+        areaDesenho.fillRect(0, 0, larguraCampo, alturaCampo)
+
+        //rede
+        areaDesenho.fillStyle = '#ffffff'
+        areaDesenho.fillRect(
+          larguraCampo / 2 - larguraLinha / 2,
+          0,
+          larguraLinha,
+          alturaCampo
+        )
+
+        //Raquete 1
+        areaDesenho.fillRect(25, posJogador1, larguraLinha, alturaRaquete)
+
+        //Raquete 2
+        areaDesenho.fillRect(
+          larguraCampo - (larguraLinha + 25),
+          posJogador2,
+          larguraLinha,
+          alturaRaquete
+        )
+
+        //bola
+        areaDesenho.fillRect(
+          posBolaX - diamentroBola / 2,
+          posBolaY - diamentroBola / 2,
+          diamentroBola,
+          diamentroBola
+        )
+
+        //Escrever pontuação do jogador1
+        areaDesenho.fillText('Humano - ' + pontJogador1 + ' pontos', 100, 100)
+
+        //Escrever pontuação do jogador1
+        areaDesenho.fillText(
+          'Computador - ' + pontJogador2 + ' pontos',
+          400,
+          100
+        )
+
+        //Escrever pontuação do jogador1
+        areaDesenho.fillText('Fase Nível - ' + nivelFase, 100, 50)
+      }
+
+      function calcular() {
+        //Regras do jogo
+        posBolaX = posBolaX + velBolaPosX
+        posBolaY = posBolaY + velBolaPosY
+
+        //verificar lateral superior
+        if (posBolaY < 0 && velBolaPosY < 0) {
+          velBolaPosY = -velBolaPosY
+        }
+        //verificar lateral inferior
+        if (posBolaY > alturaCampo && velBolaPosY > 0) {
+          velBolaPosY = -velBolaPosY
+        }
+        //verifica se o jogador 2 fez um ponto
+        if (posBolaX <= 30) {
+          if (
+            posBolaY > posJogador1 &&
+            posBolaY < posJogador1 + alturaRaquete
+          ) {
+            //rebater a bola
+            velBolaPosX = -velBolaPosX
+
+            var diferencaY = posBolaY - (posJogador1 + alturaRaquete / 2)
+            velBolaPosY = diferencaY * efeitoRaquete
+          } else if (posBolaX <= 0) {
+            // Pontos jogador 2
+            pontJogador2 = pontJogador2 + 5
+            //coloca a bola no centro
+            continuar()
+          }
+        }
+
+        //verifica se o jogador 1 fez um ponto
+        if (posBolaX >= larguraCampo - 30) {
+          if (
+            posBolaY > posJogador2 &&
+            posBolaY < posJogador2 + alturaRaquete
+          ) {
+            //rebater a bola
+            velBolaPosX = -velBolaPosX
+
+            var diferencaY = posBolaY - (posJogador2 + alturaRaquete / 2)
+            velBolaPosY = diferencaY * efeitoRaquete
+          } else if (posBolaX >= larguraCampo) {
+            // Pontos jogador 1
+            pontJogador1 = pontJogador1 + 5
+
+            //aumenta nivel de fase
+            if (pontJogador1 % 2 == 0) {
+              nivelFase++
+            }
+
+            //muda de fase
+            if (nivelFase >= proximaFase) {
+              Fase()
+            }
+            //coloca a bola no centro
+            continuar()
+          }
+        }
+
+        //movimento computador
+        if (posJogador2 + alturaRaquete / 2 < posBolaY) {
+          posJogador2 = posJogador2 + velJogador2
+        } else {
+          posJogador2 = posJogador2 - velJogador2
+        }
+      }
+
+      function principal() {
+        desenhar()
+        calcular()
+      }
+    </script>
+  </body>
+</html>
